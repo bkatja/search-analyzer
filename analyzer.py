@@ -1,8 +1,9 @@
 import argparse
 import asyncio
 
-from amazon_helpers import handle_popups, perform_search, verify_search_results, sort_results, open_product_by_index, verify_product_title
+from amazon_helpers import handle_popups, perform_search, verify_search_results_visible, sort_results, open_product_by_index, verify_product_title
 from elements import AmazonPage
+from logger import Log
 from pathlib import Path
 from playwright.async_api import async_playwright
 from utils import normalize_url, navigate_to_url
@@ -12,7 +13,7 @@ EDGE_PATH = "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
 # If tested on Windows, the path should look like: 
 # EDGE_PATH = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
 
-async def open_browser_with_url(
+async def run_analyzer(
         url: str,
         search_term: str = "Nikon", 
         sort_filter: str = "price-high-to-low", 
@@ -20,6 +21,7 @@ async def open_browser_with_url(
         title_match: str = "Nikon D3X",
         debug_errors: bool = False
 ):
+    Log.section("Starting the analyzer")
     edge_executable = Path(EDGE_PATH)
     if not edge_executable.exists():
         raise FileNotFoundError(f"Edge executable not found at {EDGE_PATH}")
@@ -28,7 +30,6 @@ async def open_browser_with_url(
         browser = await p.chromium.launch(executable_path=EDGE_PATH, headless=False)
         context = await browser.new_context()
         page = await context.new_page()
-        print(f"Opening URL: {url}")
         if not await navigate_to_url(page, url):
             await browser.close()
             return
@@ -39,7 +40,7 @@ async def open_browser_with_url(
             if not await perform_search(amazon, search_term):
                 await browser.close()
                 return
-            if not await verify_search_results(amazon):
+            if not await verify_search_results_visible(amazon):
                 await browser.close()
                 return
 
@@ -55,7 +56,7 @@ async def open_browser_with_url(
                 await browser.close()
                 return
             
-            print("Amazon search results analysis is finished.")
+            Log.section("Amazon search results analysis is finished.")
 
         await browser.close()
 
@@ -99,10 +100,10 @@ def main():
     try:
         url = normalize_url(args.url)
     except ValueError as e:
-        print(f"Error: {e}")
+        Log.error(f"Error: {e}")
         return
 
-    asyncio.run(open_browser_with_url(
+    asyncio.run(run_analyzer(
         url, 
         args.search,
         args.filter, 
