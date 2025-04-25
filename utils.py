@@ -4,6 +4,7 @@ import re
 import socket
 
 from datetime import datetime
+from logger import Log
 from urllib.parse import urlparse, urlunparse
 
 DEBUG_DIR = "debug"
@@ -18,9 +19,9 @@ async def take_screenshot(page, label: str):
         filename = screenshot_filename(label)
         path = os.path.join(DEBUG_DIR, filename)
         await page.screenshot(path=path, full_page=True)
-        print(f"Screenshot saved: {path}")
+        Log.debug(f"Screenshot saved: {path}")
     except Exception as e:
-        print(f"Screenshot failed: {e}")
+        Log.error(f"Screenshot failed: {e}")
 
 def normalize_url(user_input: str) -> str:
     user_input = user_input.strip()
@@ -40,7 +41,7 @@ def normalize_url(user_input: str) -> str:
     if not netloc:
         raise ValueError("Invalid URL. Example of a valid URL: 'https://www.amazon.com'")
 
-    # 💡 Check if it's an IP — don't prepend www or validate domain pattern
+    # Check if it's an IP — don't prepend www or validate domain pattern
     try:
         ipaddress.ip_address(netloc.split(':')[0])
         is_ip = True
@@ -72,13 +73,13 @@ def domain_resolves(domain: str) -> bool:
         return False
 
 async def navigate_to_url(page, url, debug=False):
+    Log.info(f"Opening URL: {url}")
     try:
         await page.goto(url)
         return True
     except Exception as e:
         if debug:
-            print(f"(debug) Error while loading {url}: {e}")
-        print("Error: Could not load the page. Please check the URL or try again later.")
+            Log.debug(f"Error while loading {url}: {e}")
+        Log.error("Error: Could not load the page. Please check the URL or try again later.")
         await take_screenshot(page, "load_fail")
         return False
-    

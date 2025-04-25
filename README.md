@@ -20,7 +20,7 @@ All key behaviors are configurable via CLI arguments — including search term (
 Captures full-page screenshots on failure, saved in `/debug/` folder with timestamped names. Add the `--debug` argument to enable additional debug screenshots (e.g., before/after clicking elements to verify the correct index was clicked) and print raw error details to the console.
 
 - **Structured approach**  
-Modular files `analyzer.py`, `utils.py`, `amazon_helpers.py` and `elements.py` promote test reuse and clarity.
+Modular files `analyzer.py`, `utils.py`, `amazon_helpers.py`, `elements.py` and `logger.py` promote test reuse and clarity.
 
 ## Modular Architecture
 - **analyzer.py**  
@@ -43,18 +43,23 @@ Modular files `analyzer.py`, `utils.py`, `amazon_helpers.py` and `elements.py` p
   - Collects all selectors
   - Makes selectors reusable, scoped and easy to maintain
 
+- **logger.py**  
+  - Provides standardized terminal output formatting
+  - Makes logs consistent and easier to follow during test runs
+
 ## Design Goals
 - Flexibility: optional filters and selectors, dynamic CLI args
 - Readability: structured modules, detailed logs
 - Reusability: utility functions and Amazon-specific helpers separated
 - Scalability: easy to refactor for other domains or steps
+- Debuggability: meaningful console output, timestamped screenshots for failure points, optional `--debug` mode
 
 ## Known Limitations
 This tool is not a full-scale Amazon crawler or testing suite. It has a rather targeted test automation with a focused feature set:
 - Only two sort filters are supported: price-high-to-low and price-low-to-high
 - Product selection is based on index (1-based) that does not account for certain elements like grouped listings
 - Product title verification uses a simple substring match (not fuzzy or exact title checking)
-- Cookie consent or additional pop ups are not handled unless specifically added to the Amazon helpers
+- There may be additional pop ups that are not handled unless specifically added to the Amazon helpers
 - Errors related to unreachable or invalid URLs show generic messages. The system is built to allow more specific browser/network error classification if needed
 
 This setup demonstrates the structure and logic needed to scale into more comprehensive test coverage, with attention to code clarity, modularity, and simple debugging.
@@ -74,7 +79,7 @@ Mac: source myenv/bin/activate
 Win: myenv\Scripts\activate
 ```
 
-Check whether playwright is installed and install if needed:
+Check whether Playwright is installed and install if needed:
 ```
 pip show playwright
 pip install -r requirements.txt
@@ -89,13 +94,12 @@ playwright install
 
 #### Assignment-Focused Example
 
-To run the automation exactly as described in the assignment:
+Run the automation exactly as described in the assignment:
 - Search for **"Nikon"**
 - Sort by **highest price**
 - Open the **second** product in results
 - Verify the title contains **"Nikon D3X"**
 
-Run: 
 ```
 python3 analyzer.py amazon.com
 ```

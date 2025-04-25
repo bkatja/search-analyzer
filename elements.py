@@ -1,5 +1,3 @@
-# elements.py
-
 class AmazonPage:
     def __init__(self, page):
         # Main Page
@@ -16,7 +14,7 @@ class AmazonPage:
         self.sort_price_desc = page.locator('#s-result-sort-select_2')
         self.second_product = page.locator('[data-component-type="s-search-result"][data-index="2"] a.a-link-normal')
 
-        # Produc Page
+        # Product Page
         self.title_element = page.locator('span#productTitle')
 
     def get_nth_product(self, index: int):
